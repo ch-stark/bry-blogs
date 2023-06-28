@@ -73,8 +73,11 @@ You can also explicitly specify which argument index to use with the verb.  This
 
 ## use default
 
-## 
 
+## Using managed cluster data in hub templates
+
+
+## Copy Secret data from hub to managed clusters
 
 Part 1: Basic tips to make better/more readable policies
   - Use of eq
