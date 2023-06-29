@@ -43,6 +43,23 @@ spec:
   replicas: '{{ if eq (fromClusterClaim "env") "production" "staging" -}} 6 {{- else -}} 2 {{- end }}'
 ~~~
 
+## Use ternary instead of if/else statements
+In the previous example we used if the environment is "production" or "staging" set the number of replicas to 6 otherwise set the replicas to 2.
+
+Above I used an if/else statement to highlight the `eq` function, a better and more concise way to achive this would have be to use a `ternary` [function](https://masterminds.github.io/sprig/defaults.html).  The `ternary` function returns the first value if the test value is true and will return the second value if the test is false or an empty value.
+
+Rewriting the above we can see how much easier it is to read.  Note the test value can be piped into the `ternary` function or listed as the third argument.
+~~~
+apiVersion: operator.openshift.io/v1
+kind: IngressController
+metadata:
+  name: default
+  namespace: openshift-ingress-operator
+spec:
+  httpEmptyRequestsPolicy: Respond
+  replicas: '{{ (eq (fromClusterClaim "env") "production" "staging") | ternary 6 2 }}'
+~~~
+
 ## printf to format and concatinate strings
 The `printf()` [function](https://pkg.go.dev/fmt) takes a templated string which contains the text to be formatted plus some annotated verbs that tell the function how to format the remaining arguments.
 
@@ -72,12 +89,57 @@ You can also explicitly specify which argument index to use with the verb.  This
 ~~~
 
 ## use default
+When creating policies that use data from other objects we want to prevent errors by ensuring a value gets defined.  Maybe your policy is dependent on a value in a ConfigMap created by another Policy or the output of a lookup that might not return a value.  To ensure our Policy is generated as expected we can use the `default` [function](https://masterminds.github.io/sprig/defaults.html) to ensure a value is produced.
 
+Supoposed we wanted out IngressController to set the replica count to the number of infra nodes.  To prevent a condition where there are no Ingress pods we want to default to a count of 2.  Because this policy could be applied before infra nodes are created or our lookup could unexpectedly return an empty set, we want to ensure we have a default value defined.
+
+Also note we are making use of a feature introduced in RHACM 2.8 using labels to limit the [lookup function](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#lookup-func) to only return nodes with the infra role.
+~~~
+apiVersion: operator.openshift.io/v1
+kind: IngressController
+metadata:
+  name: default
+  namespace: openshift-ingress-operator
+spec:
+  httpEmptyRequestsPolicy: Respond
+  replicas: '{{ len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items | default 2 }}'
+~~~
 
 ## Using managed cluster data in hub templates
 
+region: '{{hub (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "default" .ManagedClusterName).metadata.labels.region hub}}'
 
-## Copy Secret data from hub to managed clusters
+## Copy entire ConfigMaps and Secret data
+There are many usecases where a Policy needs to copy an entire Secret from one namespace to another or from the Hub to a Managed cluster.  RHACM 2.8 introduced two new templating functions to make this easier.
+
+In RHACM 2.7 and earlier a Policy had to template every key from the Secret or ConfigMap.  This was a repative task that needed frequest updates as new data was added to the reference object.
+~~~
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admission-control-tls
+  namespace: stackrox
+data:
+  admission-control-cert.pem: '{{hub fromSecret "my-policies" "admission-control-tls" "admission-control-cert.pem"  hub}}'
+  admission-control-key.pem: '{{hub fromSecret "my-policies" "admission-control-tls" "admission-control-key.pem" hub}}'
+  ca.pem: '{{hub fromSecret "my-policies" "admission-control-tls" "ca.pem" hub}}'
+type: Opaque
+~~~
+
+RHACM 2.8 introduced the `copySecretData` and `copyConfigMapData` [functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#copysecretdata-function) which can be used to copy all data keys from the refence object.  These functions are also available in Hub templates to copy the reference object from the Hub to managed clusters.
+~~~
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admission-control-tls
+  namespace: stackrox
+data: '{{hub copySecretData "my-policies" "admission-control-tls" hub}}'
+type: Opaque
+~~~
+
+
+## Summary
+Soem blah blah blah to close out 
 
 Part 1: Basic tips to make better/more readable policies
   - Use of eq
