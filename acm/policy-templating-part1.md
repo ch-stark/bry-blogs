@@ -12,7 +12,7 @@ In part one of this blog series I will review practices you can use to make usin
   - [Review Governance Policy Templates and template functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#support-templates-in-config-policies)
 
 
-## Use PolicyGenerator
+## Use PolicyGenerator to manage code
 If you are not familiar with [PolicyGenerator](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#policy-generator) I recommend you read the [Generating Governance Policies Using Kustomize and GitOps](https://cloud.redhat.com/blog/generating-governance-policies-using-kustomize-and-gitops) blog post.
 
 The PolicyGenerator greatly simplifies management of your policies by allowing you to focus on the configuration to be applied.  The generator configuration lets you control the specifics of the Policy that is generated.
@@ -88,7 +88,7 @@ You can also explicitly specify which argument index to use with the verb.  This
 {{ printf("%[1]s-mycluster-%[1]s", (fromClusterClaim "env")) }}
 ~~~
 
-## use default
+## Setting default values
 When creating policies that use data from other objects we want to prevent errors by ensuring a value gets defined.  Maybe your policy is dependent on a value in a ConfigMap created by another Policy or the output of a lookup that might not return a value.  To ensure our Policy is generated as expected we can use the `default` [function](https://masterminds.github.io/sprig/defaults.html) to ensure a value is produced.
 
 Supoposed we wanted out IngressController to set the replica count to the number of infra nodes.  To prevent a condition where there are no Ingress pods we want to default to a count of 2.  Because this policy could be applied before infra nodes are created or our lookup could unexpectedly return an empty set, we want to ensure we have a default value defined.
@@ -141,12 +141,6 @@ type: Opaque
 ## Summary
 Soem blah blah blah to close out 
 
-Part 1: Basic tips to make better/more readable policies
-  - Use of eq
-  - use of printf
-  - use of default
-  - use of .ManagedClusterName 
- (edit) - use of .managedClusterLabels
- (edit) - use of copySecretData
+
 
 
