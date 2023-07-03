@@ -6,7 +6,7 @@
 
 Red Hat Advanced Cluster Management for Kubernetes (RHACM) Governance provides an extensible framework for enterprises to introduce their own security and configuration policies that can be applied to managed OpenShift or Kubernetes clusters. For more information on RHACM policies, I recommend that you read the [Comply to standards using policy based governance](https://cloud.redhat.com/blog/comply-to-standards-using-policy-based-governance-of-red-hat-advanced-cluster-management-for-kubernetes), and [Implement Policy-based Governance Using Configuration Management](https://cloud.redhat.com/blog/implement-policy-based-governance-using-configuration-management-of-red-hat-advanced-cluster-management-for-kubernetes) blogs.
 
-In part one of this blog series I will review practices you can use to make using templates in your policies more readable and easier to maintain.
+In this multi part blog series I will look at a number of techiques you can use when using templates in your RHACM Policies.  In part one I will review practices you can use to make your templates more readable and easier to maintain.
 
 **Prerequisites**:
   - [Review Governance Policy Templates and template functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#support-templates-in-config-policies)
@@ -46,7 +46,7 @@ spec:
 ## Use ternary instead of if/else statements
 In the previous example we used if the environment is "production" or "staging" set the number of replicas to 6 otherwise set the replicas to 2.
 
-Above I used an if/else statement to highlight the `eq` function, a better and more concise way to achive this would have be to use a `ternary` [function](https://masterminds.github.io/sprig/defaults.html).  The `ternary` function returns the first value if the test value is true and will return the second value if the test is false or an empty value.
+Above I used an if/else statement to highlight the `eq` function, a better and more concise way to achive this would have been to use a `ternary` [function](https://masterminds.github.io/sprig/defaults.html).  The `ternary` function returns the first value if the test value is true and will return the second value if the test is false or an empty value.
 
 Rewriting the above we can see how much easier it is to read.  Note the test value can be piped into the `ternary` function or listed as the third argument.
 ~~~
@@ -106,8 +106,19 @@ spec:
 ~~~
 
 ## Using managed cluster data in hub templates
+Previous versions of RHACM made the ManagedCluster name available to hub templates by using the ".ManagedClusterName" context variable.  This was useful when you needed to include the name of the cluster in your template.
 
+Starting with RHACM 2.8 a new context variable `.ManagedClusterLables` is avaiable to allow access labels applied to the ManagedCluster.  This new variable greatly simplifies getting information about the ManagedCluster that is stored in labels.
+
+Previously to access the value of a region label you would have to use the lookup function to access the `ManagedCluster` object and read the metadata of the return object.
+~~~
 region: '{{hub (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "default" .ManagedClusterName).metadata.labels.region hub}}'
+~~~
+
+The above can now be replaced with this much more concise and easier to read hub template.  There is an added benefit this removes a call to the apiserver during Policy evaluation.
+~~~
+region: '{{hub .ManagedClusterLabels.region hub}}'
+~~~
 
 ## Copy entire ConfigMaps and Secret data
 There are many usecases where a Policy needs to copy an entire Secret from one namespace to another or from the Hub to a Managed cluster.  RHACM 2.8 introduced two new templating functions to make this easier.
@@ -139,7 +150,8 @@ type: Opaque
 
 
 ## Summary
-Soem blah blah blah to close out 
+In part one we presented a number of examples you can use to make your templates easier to read and maintain.  In part two we will look at how to use the `raw-object-templates` to expand templates for more complex use cases.
+
 
 
 
