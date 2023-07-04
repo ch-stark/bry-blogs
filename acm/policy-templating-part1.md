@@ -102,7 +102,7 @@ metadata:
   namespace: openshift-ingress-operator
 spec:
   httpEmptyRequestsPolicy: Respond
-  replicas: '{{ len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items | default 2 }}'
+  replicas: '{{ (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items | default 2) | toInt }}'
 ~~~
 
 ## Using managed cluster data in hub templates
