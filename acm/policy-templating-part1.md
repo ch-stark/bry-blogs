@@ -6,7 +6,7 @@
 
 Red Hat Advanced Cluster Management for Kubernetes (RHACM) Governance provides an extensible framework for enterprises to introduce their own security and configuration policies that can be applied to managed OpenShift or Kubernetes clusters. For more information on RHACM policies, I recommend that you read the [Comply to standards using policy based governance](https://cloud.redhat.com/blog/comply-to-standards-using-policy-based-governance-of-red-hat-advanced-cluster-management-for-kubernetes), and [Implement Policy-based Governance Using Configuration Management](https://cloud.redhat.com/blog/implement-policy-based-governance-using-configuration-management-of-red-hat-advanced-cluster-management-for-kubernetes) blogs.
 
-In this multi part blog series I will look at a number of techiques you can use when using templates in your RHACM Policies.  In part one I will review practices you can use to make your templates more readable and easier to maintain.
+In this multi part blog series I will look at a number of techniques you can use when using templates in your RHACM Policies.  In part one I will review practices you can use to make your templates more readable and easier to maintain.
 
 **Prerequisites**:
   - [Review Governance Policy Templates and template functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#support-templates-in-config-policies)
@@ -21,7 +21,7 @@ Here you can see the difference in required code to create a simple namespace.
 ![Namespace Policy](images/part1-policygenerator-0.png)
 
 ## "eq" function instead of || to compare 1:n
-In the case where we want to compare and test an object to see if it equals one out of multiple values we would normally write our if statment as follows:
+In the case where we want to compare and test an object to see if it equals one out of multiple values we would normally write our if statement as follows:
 ~~~
 $myObject == Arg1 || $myObject == Arg2  || $myObject == Arg3
 ~~~
@@ -31,7 +31,7 @@ But in Go the `eq` is a [function](https://pkg.go.dev/text/template#hdr-Function
 eq $myObject Arg1 Arg2 Arg3
 ~~~
 
-Let's look at a full example.  Suppose we wanted our clusters in production and staging to use a different number replicas for the IngressController compared to other environments.  We would write a policy similar to below
+Let's look at a full example.  Suppose we wanted our clusters in production and staging to use a different number of replicas for the IngressController compared to other environments.  We would write a policy similar to below
 ~~~
 apiVersion: operator.openshift.io/v1
 kind: IngressController
@@ -60,7 +60,7 @@ spec:
   replicas: '{{ (eq (fromClusterClaim "env") "production" "staging") | ternary 6 2 }}'
 ~~~
 
-## printf to format and concatinate strings
+## printf to format and concatenate strings
 The `printf()` [function](https://pkg.go.dev/fmt) takes a templated string which contains the text to be formatted plus some annotated verbs that tell the function how to format the remaining arguments.
 
 Instead of using multiple template blocks like
@@ -106,9 +106,9 @@ spec:
 ~~~
 
 ## Using managed cluster data in hub templates
-Previous versions of RHACM made the ManagedCluster name available to hub templates by using the ".ManagedClusterName" context variable.  This was useful when you needed to include the name of the cluster in your template.
+Previous versions of RHACM made the ManagedCluster name available to hub templates by using the `.ManagedClusterName` context variable.  This was useful when you needed to include the name of the cluster in your template.
 
-Starting with RHACM 2.8 a new context variable `.ManagedClusterLables` is avaiable to allow access labels applied to the ManagedCluster.  This new variable greatly simplifies getting information about the ManagedCluster that is stored in labels.
+Starting with RHACM 2.8 a new context variable `.ManagedClusterLables` is available to allow access labels applied to the ManagedCluster.  This new variable greatly simplifies getting information about the ManagedCluster that is stored in labels.
 
 Previously to access the value of a region label you would have to use the lookup function to access the `ManagedCluster` object and read the metadata of the return object.
 ~~~
@@ -121,9 +121,9 @@ region: '{{hub .ManagedClusterLabels.region hub}}'
 ~~~
 
 ## Copy entire ConfigMaps and Secret data
-There are many usecases where a Policy needs to copy an entire Secret from one namespace to another or from the Hub to a Managed cluster.  RHACM 2.8 introduced two new templating functions to make this easier.
+There are many use cases where a Policy needs to copy an entire Secret from one namespace to another or from the Hub to a Managed cluster.  RHACM 2.8 introduced two new templating functions to make this easier.
 
-In RHACM 2.7 and earlier a Policy had to template every key from the Secret or ConfigMap.  This was a repative task that needed frequest updates as new data was added to the reference object.
+In RHACM 2.7 and earlier a Policy had to template every key from the Secret or ConfigMap.  This was a repetitive task that needed frequent updates as new data was added to the reference object.
 ~~~
 apiVersion: v1
 kind: Secret
@@ -137,7 +137,7 @@ data:
 type: Opaque
 ~~~
 
-RHACM 2.8 introduced the `copySecretData` and `copyConfigMapData` [functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#copysecretdata-function) which can be used to copy all data keys from the refence object.  These functions are also available in Hub templates to copy the reference object from the Hub to managed clusters.
+RHACM 2.8 introduced the `copySecretData` and `copyConfigMapData` [functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#copysecretdata-function) which can be used to copy all data keys from the reference object.  These functions are also available in Hub templates to copy the reference object from the Hub to managed clusters.
 ~~~
 apiVersion: v1
 kind: Secret
