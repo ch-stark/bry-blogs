@@ -73,13 +73,12 @@ We can use the `printf()` function to rewrite it as
 {{ printf("%s-mycluster-%s", (fromClusterClaim "env"), (fromClusterClaim "name")) }}
 ~~~
 
-`printf()` also allows formatting of the data using a wide array of verbs.  Some of the more common usages are
-Some of the most commonly used specifiers are:
+`printf()` also allows formatting of the data using a wide array of verbs.  Some of the most commonly used verb specifiers are:
 - %v – formats the value in a default format
 - %d – formats decimal integers
 - %g – formats the floating-point numbers
-- %b – formats base 22 numbers
-- %o – formats base 88 numbers
+- %b – formats base 2 numbers
+- %o – formats base 8 numbers
 - %t – formats true or false values
 - %s – formats string values
 
