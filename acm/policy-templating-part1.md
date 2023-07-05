@@ -90,7 +90,7 @@ You can also explicitly specify which argument index to use with the verb.  This
 ## Setting default values
 When creating policies that use data from other objects we want to prevent errors by ensuring a value gets defined.  Maybe your policy is dependent on a value in a ConfigMap created by another Policy or the output of a lookup that might not return a value.  To ensure our Policy is generated as expected we can use the `default` [function](https://masterminds.github.io/sprig/defaults.html) to ensure a value is produced.
 
-Supoposed we wanted out IngressController to set the replica count to the number of infra nodes.  To prevent a condition where there are no Ingress pods we want to default to a count of 2.  Because this policy could be applied before infra nodes are created or our lookup could unexpectedly return an empty set, we want to ensure we have a default value defined.
+Supopose we wanted our IngressController to set the replica count to the number of infra nodes.  To prevent a condition where there are no Ingress pods we want to default to a count of 2.  Because this policy could be applied before infra nodes are created or our lookup could unexpectedly return an empty set, we want to ensure we have a default value defined.
 
 Also note we are making use of a feature introduced in RHACM 2.8 using labels to limit the [lookup function](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#lookup-func) to only return nodes with the infra role.
 ~~~
@@ -114,7 +114,7 @@ Previously to access the value of a region label you would have to use the looku
 region: '{{hub (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "default" .ManagedClusterName).metadata.labels.region hub}}'
 ~~~
 
-The above can now be replaced with this much more concise and easier to read hub template.  There is an added benefit this removes a call to the apiserver during Policy evaluation.
+The above can now be replaced with this much more concise and easier to read hub template.  Additionally, this removes a call to the apiserver during Policy evaluation.
 ~~~
 region: '{{hub .ManagedClusterLabels.region hub}}'
 ~~~
