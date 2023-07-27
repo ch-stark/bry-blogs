@@ -107,7 +107,7 @@ spec:
 ## Using managed cluster data in hub templates
 Previous versions of RHACM made the ManagedCluster name available to hub templates by using the `.ManagedClusterName` context variable. This was useful when you needed to include the name of the cluster in your template.
 
-Starting with RHACM 2.8 a new context variable `.ManagedClusterLables` is available to allow access labels applied to the ManagedCluster. This new variable greatly simplifies getting information about the ManagedCluster that is stored in labels.
+Starting with RHACM 2.8 a new context variable `.ManagedClusterLabels` is available to allow access labels applied to the ManagedCluster. This new variable greatly simplifies getting information about the ManagedCluster that is stored in labels.
 
 Previously to access the value of a region label you would have to use the lookup function to access the `ManagedCluster` object and read the metadata of the return object.
 ~~~
