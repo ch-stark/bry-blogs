@@ -119,6 +119,11 @@ The above can now be replaced with this much more concise and easier to read hub
 region: '{{hub .ManagedClusterLabels.region hub}}'
 ~~~
 
+Note if the label you want to reference has special charactors in the name like dashes, periods, or forward slashes you will receive an error such as "template: tmpl:17: bad character U+002D '-'".  To use these labels with the `.ManagedClusterLabels` context variable we can index the labels.
+~~~
+channel: '{{hub (index .ManagedClusterLabels "openshiftVersion-major-minor") hub}}'
+~~~
+
 ## Copy entire ConfigMaps and Secret data
 There are many use cases where a Policy needs to copy an entire Secret from one namespace to another or from the Hub to a Managed cluster. RHACM 2.8 introduced two new templating functions to make this easier.
 
