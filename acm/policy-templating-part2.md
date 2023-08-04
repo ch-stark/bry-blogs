@@ -6,19 +6,19 @@
 
 Red Hat Advanced Cluster Management for Kubernetes (RHACM) Governance provides an extensible framework for enterprises to introduce their own security and configuration policies that can be applied to managed OpenShift or Kubernetes clusters. For more information on RHACM policies, I recommend that you read the [Applying Policy-Based Governance at Scale Using Templates](https://cloud.redhat.com/blog/applying-policy-based-governance-at-scale-using-templates) and [Comply to standards using policy based governance](https://cloud.redhat.com/blog/comply-to-standards-using-policy-based-governance-of-red-hat-advanced-cluster-management-for-kubernetes) blogs.
 
-In this multi part blog series I showcase a number of techniques you can use when using templates in your RHACM Policies. In [part one](https://cloud.redhat.com/blog/tips-for-using-templating-in-governance-policies-part-1) I reviewed practices you can use to make your templates more readable and easier to maintain.
+In this multi part blog series I will showcase a number of techniques you can use when using templates in your RHACM Policies. In [part one](https://cloud.redhat.com/blog/tips-for-using-templating-in-governance-policies-part-1) I reviewed practices you can use to make your templates more readable and easier to maintain.
 
-In part two of this series I will look at more advanced template functionality and extending the use cases for using Policies to manage clusters.
+In part two of this series I will look at more advanced template functionality and extended use cases for using Policies to manage clusters.
 
 **Prerequisites**:
   - [Review Governance Policy Templates and template functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#support-templates-in-config-policies)
 
 ## Validate cluster state
-RHACM Policies are typically viewed as the mechanism to apply day-2 configuration to a cluster.  This could be configuring Authentication, creating infra nodes and configuring cluster workloads to on them, installing Operators along with a number of other day-2 configurations.  In part one of this series we looked at using templating to make these configurations more dynanic and the policies easier to maintain.
+RHACM Policies are typically viewed as the mechanism to apply day-2 configuration to a cluster.  This could be configuring Authentication, creating infra nodes and configuring cluster workloads on them, installing Operators along with a number of other day-2 configurations.  In part one of this series we looked at using templating to make these configurations more dynamic and the policies easier to maintain.
 
 A policy to install an Operator using the Operator Lifecycle Manager (OLM) might consist of a `Namespace` definition, an `OperatorGroup` and a `Subscription`.  Applying these three objects will result in OLM installing the specified Operator.  Once those three objects exist the `Policy` will show compliance.  Compliance is only an indicator the objects have been created as specified and not that the operator has successfully installed and is running.
 
-RHACM Policies have the capability to be in an "Inform" state where the Policy can be extended to validate the state of objects in the cluster.  This additional functionality opens a very powerful set of tools setting RHACM apart from other GitOps tooling to managed clusters.  As a cluster manager you can ensure all components are healthy across your entire fleet of clusters by viewing the status in RHACM.  
+RHACM Policies have the capability to be in an "Inform" state where the Policy can be extended to validate the state of objects in the cluster.  This additional functionality opens a very powerful set of tools setting RHACM apart from other GitOps tooling to manage clusters.  As a cluster manager you can ensure all components are healthy across your entire fleet of clusters by viewing the status in RHACM.  
 
 Let's review how we can implement this when installing an Operator like OpenShift GitOps.  In addition to the Policy to enforce creating the Subscription we can add a Policy to verify the health of the operator.  The example below will validate the health of the Subscription, the Operator Deployment, and the ArgoCD instance itself.
 ~~~
@@ -83,9 +83,9 @@ spec:
         severity: high
 ~~~
 
-We ca now not only determine the objects requried were created to install the operator, but the operator is installed and running successfully.  
+We can now not only determine the objects required were created to install the operator, but the operator is installed and running successfully.  
 
-RHACM inform policies can be used to identify other cluster issues not just the health of our Day-2 configurations.  Common cluster health states such as [kcs-645901](https://access.redhat.com/solutions/6459071) can be identified in Policies to make cluster administrators aware of potential problems before users are impacted.  This example would become non-compiant if the openshift-marketplace Job or InstallPlan contain the indicated status conditions.  An upcoming addition to this series we will look at how we can use policies to automatically correct issues such as this.
+RHACM inform policies can be used to identify other cluster issues, not just the health of our Day-2 configurations.  Common cluster health states such as [kcs-645901](https://access.redhat.com/solutions/6459071) can be identified in Policies to make cluster administrators aware of potential problems before users are impacted.  This example would become non-compliant if the openshift-marketplace Job or InstallPlan contain the indicated status conditions.  An upcoming addition to this series we will look at how we can use policies to automatically correct issues such as this.
 ~~~
 ---
 kind: Job
@@ -125,7 +125,7 @@ status:
 ~~~
 
 ## Enabling new capabilities with object-templates-raw
-A new capability was added to `ConfigurationPolicies` in RHACM 2.7.2 and 2.8; [objects-template-raw](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#raw-object-template-processing).  This new capablity allows you to use if statements, assign values to variables, and make use of ranges.
+A new capability was added to `ConfigurationPolicies` in RHACM 2.7.2 and 2.8; [objects-template-raw](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#raw-object-template-processing).  This new capability allows you to use if statements, assign values to variables, and make use of ranges.
 
 All of the templating we have discussed to this point has been to return a string or a single value.  `object-templates-raw` supports advanced templating use-cases allowing a policy to generate YAML string representation.
 
