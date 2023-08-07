@@ -6,7 +6,7 @@
 
 Red Hat Advanced Cluster Management for Kubernetes (RHACM) Governance provides an extensible framework for enterprises to introduce their own security and configuration policies that can be applied to managed OpenShift or Kubernetes clusters. For more information on RHACM policies, I recommend that you read the [Applying Policy-Based Governance at Scale Using Templates](https://cloud.redhat.com/blog/applying-policy-based-governance-at-scale-using-templates) and [Comply to standards using policy based governance](https://cloud.redhat.com/blog/comply-to-standards-using-policy-based-governance-of-red-hat-advanced-cluster-management-for-kubernetes) blogs.
 
-In this multi part blog series I will showcase a number of techniques you can use when using templates in your RHACM Policies. In [part one](https://cloud.redhat.com/blog/tips-for-using-templating-in-governance-policies-part-1) I reviewed practices you can use to make your templates more readable and easier to maintain.
+In this multi part blog series I will showcase a number of techniques that can be applied when using templates in your RHACM Policies. In [part one](https://cloud.redhat.com/blog/tips-for-using-templating-in-governance-policies-part-1) I reviewed practices you can use to make your templates more readable and easier to maintain.
 
 In part two of this series I will look at more advanced template functionality and extended use cases for using Policies to manage clusters.
 
@@ -14,9 +14,9 @@ In part two of this series I will look at more advanced template functionality a
   - [Review Governance Policy Templates and template functions](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/governance/index#support-templates-in-config-policies)
 
 ## Validate cluster state
-RHACM Policies are typically viewed as the mechanism to apply day-2 configuration to a cluster.  This could be configuring Authentication, creating infra nodes and configuring cluster workloads on them, installing Operators along with a number of other day-2 configurations.  In part one of this series we looked at using templating to make these configurations more dynamic and the policies easier to maintain.
+RHACM Policies are typically viewed as the mechanism to apply day-2 configuration to a cluster.  This could be configuring authentication, creating infra nodes and configuring cluster workloads on them, installing operators along with a number of other day-2 configurations.  In part one of this series we looked at using templating to make these configurations more dynamic and the policies easier to maintain.
 
-A policy to install an Operator using the Operator Lifecycle Manager (OLM) might consist of a `Namespace` definition, an `OperatorGroup` and a `Subscription`.  Applying these three objects will result in OLM installing the specified Operator.  Once those three objects exist the `Policy` will show compliance.  Compliance is only an indicator the objects have been created as specified and not that the operator has successfully installed and is running.
+A policy to install an Operator using the Operator Lifecycle Manager (OLM) might consist of a `Namespace` definition, an `OperatorGroup` and a `Subscription`.  Applying these three objects will result in `OLM` installing the specified Operator.  Once those three objects exist the `Policy` will show as status `compliant`.  Compliance is only an indicator the objects have been created as specified and not that the operator has successfully installed and is running.
 
 RHACM Policies have the capability to be in an "Inform" state where the Policy can be extended to validate the state of objects in the cluster.  This additional functionality opens a very powerful set of tools setting RHACM apart from other GitOps tooling to manage clusters.  As a cluster manager you can ensure all components are healthy across your entire fleet of clusters by viewing the status in RHACM.  
 
@@ -123,9 +123,11 @@ status:
       type: Installed
   phase: Failed
 ~~~
+Note for the above example to work you need to create a PolicyGenerator configuration.
+
 
 ## Enabling new capabilities with object-templates-raw
-A new capability was added to `ConfigurationPolicies` in RHACM 2.7.2 and 2.8; [objects-template-raw](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#raw-object-template-processing).  This new capability allows you to use if statements, assign values to variables, and make use of ranges.
+A new capability was added to `ConfigurationPolicies` in RHACM 2.7.2 and 2.8; [objects-template-raw](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html-single/governance/index#raw-object-template-processing).  This new feature allows you to use `if statements`, assign values to variables, and make use of ranges.
 
 All of the templating we have discussed to this point has been to return a string or a single value.  `object-templates-raw` supports advanced templating use-cases allowing a policy to generate YAML string representation.
 
@@ -161,9 +163,9 @@ spec:
           replicas: {{ $infraCount | default 2) | toInt }}
 ~~~
 
-When the policy is applied to the cluster, if there are zero infra nodes (`$infraCount == 0`) the whole block for the `spec.nodePlacement` will not be part of the IngressController configuration. Once infra nodes are added to the cluster the policy will reevaluate and the configuration updated.
+When the policy is applied to the cluster, if there are zero infra nodes (`$infraCount == 0`) the whole block for the `spec.nodePlacement` will not be part of the IngressController configuration. Once infra nodes are added to the cluster the policy will reevaluate and the configuration will be updated.
 
-The raw templating also allows you to create more advanced objects where some processing of information needs to be completed before generating the objectDefinition.  Here we are creating the multiline string for the Thanos configuration using information from the OpenShift Data Foundation configured on the cluster.  The Thanos configuration is then processed and encoded to be stored in the thanos.yaml key of the secret generated by the policy.
+The raw templating also allows you to create more advanced objects where some processing of information needs to be completed before generating the `objectDefinition`.  Here we are creating the multiline string for the Thanos configuration using information from the OpenShift Data Foundation configured on the cluster.  The Thanos configuration is then processed and encoded to be stored in the thanos.yaml key of the secret generated by the policy.
 ~~~
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
@@ -206,7 +208,7 @@ spec:
 ## Using range to generator objects in policies
 The `range` [function](https://pkg.go.dev/text/template) creates a loop on an array, slice, map, or channel.  We can use this to loop through a list of either static values, a return from the lookup function, or parts of an object such as the labels on a Deployment.  Each iteration of the loop can be assigned to a variable using the format `{{ range $myItem := $list }} printf $myItem.property {{ end }}` a dot (.) context variable using the format `{{ range $list }} printf .property {{ end }}` or `{{ range $myItem := $list }} printf $myItem.property {{ else }} printf "empty list" {{ end }}` which will execute the else if the $list is empty.
 
-This can be very useful for creating policies that would generate many objectDefinitions such as creating a `ConfigMap` for each namespace that meets a set requirement.  In this example we are looping through all `Pods` in the "portworx" namespace, identifying failed pods with the name containing "kvdb".  Pods found matching this condition will removed from the cluster.
+This can be very useful for creating policies that would generate many objectDefinitions such as creating a `ConfigMap` for each namespace that meets a set requirement.  In this example we are looping through all `Pods` in the "portworx" namespace, identifying failed pods with the name containing "kvdb".  Pods found matching this condition will be removed from the cluster.
 ~~~
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
